@@ -1,6 +1,8 @@
+use std::collections::VecDeque;
+
 use super::*;
 
-pub fn draw_map(dimensions: Point, cookie: Point, snake_segments: Vec<Point>) -> String {
+pub fn draw_map(dimensions: &Point, cookie: &Point, snake_segments: &VecDeque<Point>) -> String {
     let map_tile = "··";
     let snake_tile = "██";
     let cookie_tile = "()";
@@ -23,7 +25,7 @@ pub fn draw_map(dimensions: Point, cookie: Point, snake_segments: Vec<Point>) ->
             };
             match current_point {
                 x if x == *snake_is_here => map.push_str(snake_tile),
-                x if x == cookie => map.push_str(cookie_tile),
+                x if x == *cookie => map.push_str(cookie_tile),
                 _ => map.push_str(map_tile),
             }
         }

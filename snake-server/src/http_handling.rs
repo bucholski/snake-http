@@ -42,7 +42,6 @@ pub async fn handle_connection(mut stream: TcpStream, queue: DirQueue) {
     let status_line = "HTTP/1.1 200 OK";
     let contents = "debug";
     let length = contents.len();
-    println!();
 
     let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
 
