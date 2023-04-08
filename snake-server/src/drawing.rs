@@ -19,8 +19,8 @@ pub fn draw_map(dimensions: &Point, cookie: &Point, snake_segments: &VecDeque<Po
                 Some(x) => x,
                 None => &Point {
                     //just move it outta the dimensions
-                    x: 9999999,
-                    y: 9999999,
+                    x: 9999,
+                    y: 9999,
                 },
             };
             match current_point {
