@@ -14,7 +14,7 @@ async fn main() {
     let mut current_direction: Direction = Direction::Down;
     let move_queue: DirQueue = Arc::new(Mutex::new(Vec::new()));
     let listener = TcpListener::bind("127.0.0.1:7878").await.unwrap();
-    let mut interval = tokio::time::interval(Duration::from_millis(100));
+    let mut interval = tokio::time::interval(Duration::from_millis(300));
     let dimensions = Point { x: 10, y: 10 };
     let mut snake = game_logic::segments_init(&dimensions);
     let mut cookie: Point = Point { x: 0, y: 0 };
