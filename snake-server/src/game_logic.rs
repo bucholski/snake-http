@@ -20,27 +20,42 @@ pub fn game_handler(
     let (mut ate_cookie, mut hit_tail) = (false, false);
     move_snake(direction, current_snake, dimensions);
     //TODO
-    check_collisions(&current_snake);
+    check_collisions(&current_snake, &mut hit_tail, &mut ate_cookie, &cookie);
     if ate_cookie {
-        add_segment(&current_snake);
-        create_cookie(cookie);
+        add_segment(current_snake);
+        replace_cookie(cookie, free_points);
     }
     if hit_tail {
         game_over();
     }
 }
 
-fn check_collisions(current_snake: &VecDeque<Point>) {
-    //TODO
-    // for point in snake if head == point hit_tail is true
+fn check_collisions(
+    current_snake: &VecDeque<Point>,
+    hit_tail: &mut bool,
+    ate_cookie: &mut bool,
+    cookie: &Point,
+) {
+    let head = current_snake.get(0).unwrap();
+    let headless: VecDeque<&Point> = current_snake.range(1..).collect();
+    if head == cookie {
+        *ate_cookie = true;
+    }
+    if headless.contains(&head) {
+        println!("GAME OVER");
+        *hit_tail = true;
+    }
 }
-fn create_cookie(cookie: &mut Point) {
+pub fn replace_cookie(cookie: &mut Point, free_points: &mut Vec<Point>) {
     //TODO
+    //remove snake from free points
+    //get one random point
+    //place cookie on that point
     //gotta use that free points array + binary_search
 }
-fn add_segment(current_snake: &VecDeque<Point>) {
-    //TODO
-    //snake.push_back at the place of the last index?
+fn add_segment(current_snake: &mut VecDeque<Point>) {
+    let last_segment: Point = current_snake.get(&current_snake.len() - 1).unwrap().clone();
+    current_snake.push_back(last_segment)
 }
 fn game_over() {
     //TODO

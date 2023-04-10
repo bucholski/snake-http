@@ -18,8 +18,9 @@ async fn main() {
             free_points.push(Point { x: x, y: y });
         }
     }
-    let mut snake = game_logic::segments_init(&dimensions);
     let mut cookie: Point = Point { x: 0, y: 0 };
+    let mut snake = game_logic::segments_init(&dimensions);
+    game_logic::replace_cookie(&mut cookie, &mut free_points);
 
     let mut current_direction: Direction = Direction::Down;
     let move_queue: DirQueue = Arc::new(Mutex::new(Vec::new()));
