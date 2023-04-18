@@ -5,7 +5,7 @@ pub mod move_queue_handling;
 use game_logic::Point;
 use http_handling::*;
 use move_queue_handling::Direction;
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, VecDeque};
 use std::sync::{Arc, Mutex};
 use tokio::net::TcpListener;
 use tokio::time::Duration;
@@ -15,21 +15,22 @@ async fn main() {
     let dimensions = Point { x: 10, y: 10 };
     let mut free_points = BTreeSet::new();
     let mut cookie: Point = Point { x: 0, y: 0 };
-    let mut snake = game_logic::snake_init(&dimensions);
+    let mut snake: VecDeque<Point> = VecDeque::new();
+    game_logic::snake_init(&dimensions, &mut snake);
     game_logic::free_points_init(&dimensions, &mut free_points, &snake);
     game_logic::replace_cookie(&mut cookie, &mut free_points);
 
-    let mut current_direction: Direction = Direction::Down;
+    let mut current_direction: Direction = Direction::Right;
     let move_queue: DirQueue = Arc::new(Mutex::new(Vec::new()));
     let listener = TcpListener::bind("127.0.0.1:7878").await.unwrap();
-    let mut interval = tokio::time::interval(Duration::from_millis(100));
+    let mut interval = tokio::time::interval(Duration::from_millis(200));
 
     loop {
         tokio::select! {
           _server_tick = interval.tick() => {
             current_direction = move_queue_handling::select_move(&move_queue, current_direction);
             move_queue.lock().unwrap().clear();
-            game_logic::game_handler(&current_direction, &mut snake, &dimensions, &mut cookie, &mut free_points);
+            game_logic::game_handler(&mut current_direction, &mut snake, &dimensions, &mut cookie, &mut free_points);
             drawing::draw_map(&dimensions, &cookie, &snake);
           },
           incoming_request = listener.accept() =>{

@@ -7,7 +7,6 @@ pub fn draw_map(dimensions: &Point, cookie: &Point, snake_segments: &VecDeque<Po
     let snake_tile = "██";
     let cookie_tile = "()";
     let mut map = String::new();
-
     for y in 0..dimensions.y {
         for x in 0..dimensions.x {
             let current_point = Point { x: x, y: y };
