@@ -1,8 +1,8 @@
 // use move_queue_handling::Direction;
 
-use std::collections::VecDeque;
-
 use crate::move_queue_handling::Direction;
+use rand::{seq::IteratorRandom, thread_rng};
+use std::collections::{BTreeSet, VecDeque};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct Point {
@@ -10,16 +10,31 @@ pub struct Point {
     pub y: i16,
 }
 
+pub fn free_points_init(
+    dimensions: &Point,
+    free_points: &mut BTreeSet<Point>,
+    snake: &VecDeque<Point>,
+) {
+    for x in 0..dimensions.x {
+        for y in 0..dimensions.y {
+            free_points.insert(Point { x: x, y: y });
+        }
+    }
+    for segment in snake {
+        free_points.remove(&segment);
+    }
+}
+
 pub fn game_handler(
     direction: &Direction,
     current_snake: &mut VecDeque<Point>,
     dimensions: &Point,
     cookie: &mut Point,
-    free_points: &mut Vec<Point>,
+    free_points: &mut BTreeSet<Point>,
 ) {
     let (mut ate_cookie, mut hit_tail) = (false, false);
     move_snake(direction, current_snake, dimensions);
-    //TODO
+    update_free_points(free_points, current_snake);
     check_collisions(&current_snake, &mut hit_tail, &mut ate_cookie, &cookie);
     if ate_cookie {
         add_segment(current_snake);
@@ -46,12 +61,15 @@ fn check_collisions(
         *hit_tail = true;
     }
 }
-pub fn replace_cookie(cookie: &mut Point, free_points: &mut Vec<Point>) {
-    //TODO
-    //remove snake from free points
-    //get one random point
-    //place cookie on that point
-    //gotta use that free points array + binary_search
+
+fn update_free_points(free_points: &mut BTreeSet<Point>, snake: &VecDeque<Point>) {
+    free_points.remove(snake.get(0).unwrap());
+    free_points.insert(snake.get(snake.len() - 1).unwrap().clone());
+}
+
+pub fn replace_cookie(cookie: &mut Point, free_points: &BTreeSet<Point>) {
+    let mut rng = thread_rng();
+    *cookie = free_points.iter().choose(&mut rng).unwrap().clone();
 }
 fn add_segment(current_snake: &mut VecDeque<Point>) {
     let last_segment: Point = current_snake.get(&current_snake.len() - 1).unwrap().clone();
@@ -61,7 +79,7 @@ fn game_over() {
     //TODO
     //reset the thing
 }
-pub fn segments_init(dimensions: &Point) -> VecDeque<Point> {
+pub fn snake_init(dimensions: &Point) -> VecDeque<Point> {
     let mut snake_segments: VecDeque<Point> = VecDeque::new();
     for i in 0..3 {
         snake_segments.push_back(Point {
@@ -135,3 +153,20 @@ fn move_snake(direction: &Direction, current_snake: &mut VecDeque<Point>, dimens
 //     current_snake.pop_back();
 //     current_snake.push_front(new_head);
 // }
+#[cfg(test)]
+use super::*;
+#[test]
+fn test_cookie_spawn() {
+    let dimensions = Point { x: 5, y: 5 };
+    let mut cookie: Point = Point { x: 0, y: 0 };
+    let mut snake = game_logic::snake_init(&dimensions);
+    let mut free_points = BTreeSet::new();
+    game_logic::free_points_init(&dimensions, &mut free_points, &snake);
+    for _ in 0..10000 {
+        replace_cookie(&mut cookie, &free_points);
+        let check: Vec<_> = snake.iter().filter(|x| **x == cookie).collect();
+        if check.len() > 0 {
+            assert!(false);
+        }
+    }
+}

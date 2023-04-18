@@ -5,6 +5,7 @@ pub mod move_queue_handling;
 use game_logic::Point;
 use http_handling::*;
 use move_queue_handling::Direction;
+use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex};
 use tokio::net::TcpListener;
 use tokio::time::Duration;
@@ -12,20 +13,16 @@ use tokio::time::Duration;
 #[tokio::main]
 async fn main() {
     let dimensions = Point { x: 10, y: 10 };
-    let mut free_points: Vec<Point> = Vec::new();
-    for x in 0..dimensions.x {
-        for y in 0..dimensions.y {
-            free_points.push(Point { x: x, y: y });
-        }
-    }
+    let mut free_points = BTreeSet::new();
     let mut cookie: Point = Point { x: 0, y: 0 };
-    let mut snake = game_logic::segments_init(&dimensions);
+    let mut snake = game_logic::snake_init(&dimensions);
+    game_logic::free_points_init(&dimensions, &mut free_points, &snake);
     game_logic::replace_cookie(&mut cookie, &mut free_points);
 
     let mut current_direction: Direction = Direction::Down;
     let move_queue: DirQueue = Arc::new(Mutex::new(Vec::new()));
     let listener = TcpListener::bind("127.0.0.1:7878").await.unwrap();
-    let mut interval = tokio::time::interval(Duration::from_millis(300));
+    let mut interval = tokio::time::interval(Duration::from_millis(100));
 
     loop {
         tokio::select! {
