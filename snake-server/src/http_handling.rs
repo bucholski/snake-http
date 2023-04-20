@@ -12,7 +12,7 @@ pub async fn handle_connection(mut stream: TcpStream, queue: DirQueue) {
     let http_request: String = match stream.read(&mut buf).await {
         Ok(n) if n == 0 => return,
         Ok(_) => {
-            let buf_reader = String::from_utf8(buf.to_vec()).unwrap();
+            let buf_reader = String::from_utf8(buf.to_vec()).unwrap(); //Think about this unwrap when it's not 10 PM
             buf_reader
         }
         Err(e) => {

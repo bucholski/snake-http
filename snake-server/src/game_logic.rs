@@ -51,7 +51,7 @@ fn check_collisions(
     ate_cookie: &mut bool,
     cookie: &Point,
 ) {
-    let head = snake.get(0).unwrap();
+    let head = snake.get(0).expect("Snake MUST have a head");
     let headless: VecDeque<&Point> = snake.range(1..).collect();
     if head == cookie {
         *ate_cookie = true;
@@ -63,20 +63,37 @@ fn check_collisions(
 }
 
 fn update_free_points(free_points: &mut BTreeSet<Point>, snake: &VecDeque<Point>) {
-    free_points.remove(snake.get(0).unwrap());
-    free_points.insert(snake.get(snake.len() - 1).unwrap().clone());
+    free_points.remove(snake.get(0).expect("Snake MUST have a head"));
+    free_points.insert(
+        snake
+            .get(snake.len() - 1)
+            .expect("Snake is never shorter than 3 segments")
+            .clone(),
+    );
 }
 
 pub fn replace_cookie(cookie: &mut Point, free_points: &BTreeSet<Point>) {
     let mut rng = thread_rng();
-    *cookie = free_points.iter().choose(&mut rng).unwrap().clone();
+    match free_points.iter().choose(&mut rng) {
+        Some(x) => *cookie = x.clone(),
+        None => game_won(),
+    };
     println!("NEW COOKIE");
-    //TODO On Option -> NONE WIN THE GAME
 }
 fn add_segment(snake: &mut VecDeque<Point>) {
-    let last_segment: Point = snake.get(&snake.len() - 1).unwrap().clone();
+    let last_segment: Point = snake
+        .get(&snake.len() - 1)
+        .expect("Snake is never shorter than 3 segments")
+        .clone();
     snake.push_back(last_segment)
 }
+
+fn game_won() {
+    loop {
+        println!("You won!"); //shrug
+    }
+}
+
 fn restart_game(
     dimensions: &Point,
     snake: &mut VecDeque<Point>,
@@ -102,7 +119,7 @@ pub fn snake_init(dimensions: &Point, snake: &mut VecDeque<Point>) {
 }
 
 fn move_snake(direction: &Direction, snake: &mut VecDeque<Point>, dimensions: &Point) {
-    let mut head = snake.get(0).unwrap().clone();
+    let mut head = snake.get(0).expect("Snake MUST have a head").clone();
     match direction {
         Direction::Up => head.y -= 1,
         Direction::Right => head.x += 1,
