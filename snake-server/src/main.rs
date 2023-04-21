@@ -12,7 +12,7 @@ use tokio::time::Duration;
 
 #[tokio::main]
 async fn main() {
-    let dimensions = Point { x: 0, y: 0 };
+    let dimensions = Point { x: 10, y: 10 };
     let mut free_points = BTreeSet::new();
     let mut cookie: Point = Point { x: 0, y: 0 };
     let mut snake: VecDeque<Point> = VecDeque::new();
