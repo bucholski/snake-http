@@ -7,6 +7,7 @@ use http_handling::*;
 use move_queue_handling::Direction;
 use std::collections::{BTreeSet, VecDeque};
 use std::sync::{Arc, Mutex};
+use tokio::io::AsyncReadExt;
 use tokio::net::TcpListener;
 use tokio::time::Duration;
 
@@ -26,7 +27,7 @@ async fn main() {
         Ok(x) => x,
         Err(e) => panic!("TCP error: {e}"),
     };
-    let mut interval = tokio::time::interval(Duration::from_millis(200));
+    let mut interval = tokio::time::interval(Duration::from_millis(2000));
 
     loop {
         tokio::select! {
@@ -38,15 +39,19 @@ async fn main() {
             };
 
             game_logic::game_handler(&mut current_direction, &mut snake, &dimensions, &mut cookie, &mut free_points);
-            drawing::draw_map(&dimensions, &cookie, &snake);
+            println!("{}",drawing::draw_map(&dimensions, &cookie, &snake));
           },
           incoming_request = listener.accept() =>{
             let (stream, _) = match incoming_request {
               Ok(x) => x,
               Err(e) => panic!("Incoming Request Error: {e}"),
             };
+            println!("{:?}", stream);
+            //TODO - based on whther POST or GET call drawing
+            let state = drawing::draw_map(&dimensions, &cookie, &snake);
+
             let handle_http = move_queue.clone();
-              handle_connection(stream, handle_http).await;
+              handle_connection(stream, handle_http,&state).await;
           }
         }
     }

@@ -78,7 +78,6 @@ pub fn replace_cookie(cookie: &mut Point, free_points: &BTreeSet<Point>) {
         Some(x) => *cookie = x.clone(),
         None => game_won(),
     };
-    println!("NEW COOKIE");
 }
 fn add_segment(snake: &mut VecDeque<Point>) {
     let last_segment: Point = snake
@@ -141,60 +140,3 @@ fn move_snake(direction: &Direction, snake: &mut VecDeque<Point>, dimensions: &P
     snake.pop_back();
     snake.push_front(head);
 }
-
-// pub fn move_snake(direction: &Direction, snake: &mut VecDeque<Point>, dimensions: &Point) {
-//     let current_head = snake.get(0).unwrap();
-//     let new_head = match direction {
-//         Direction::Up => Point {
-//             x: current_head.x,
-//             y: if current_head.y == 0 {
-//                 dimensions.y - 1
-//             } else {
-//                 current_head.y - 1
-//             },
-//         },
-//         Direction::Right => Point {
-//             x: if current_head.x == dimensions.x - 1 {
-//                 0
-//             } else {
-//                 current_head.x + 1
-//             },
-//             y: current_head.y,
-//         },
-//         Direction::Down => Point {
-//             x: current_head.x,
-//             y: if current_head.y == dimensions.y - 1 {
-//                 0
-//             } else {
-//                 current_head.y + 1
-//             },
-//         },
-//         Direction::Left => Point {
-//             x: if current_head.x == 0 {
-//                 dimensions.x - 1
-//             } else {
-//                 current_head.x - 1
-//             },
-//             y: current_head.y,
-//         },
-//     };
-//     snake.pop_back();
-//     snake.push_front(new_head);
-// }
-// #[cfg(test)]
-// use super::*;
-// #[test]
-// fn test_cookie_spawn() {
-//     let dimensions = Point { x: 5, y: 5 };
-//     let mut cookie: Point = Point { x: 0, y: 0 };
-//     let mut snake = game_logic::snake_init(&dimensions, snake);
-//     let mut free_points = BTreeSet::new();
-//     game_logic::free_points_init(&dimensions, &mut free_points, &snake);
-//     for _ in 0..10000 {
-//         replace_cookie(&mut cookie, &free_points);
-//         let check: Vec<_> = snake.iter().filter(|x| **x == cookie).collect();
-//         if check.len() > 0 {
-//             assert!(false);
-//         }
-//     }
-// }

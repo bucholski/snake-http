@@ -30,6 +30,6 @@ pub fn draw_map(dimensions: &Point, cookie: &Point, snake_segments: &VecDeque<Po
         }
         map.push_str("\n")
     }
-    print!("{map}");
+    // print!("{map}");
     map
 }

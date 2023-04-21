@@ -8,6 +8,7 @@ use crossterm::{
     style::Print,
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType},
 };
+use rand::Error;
 use reqwest::{self};
 pub use std::io::stdout;
 use std::io::Stdout;
@@ -18,7 +19,14 @@ pub fn setup(stdout: &mut Stdout) {
         stdout,
         Clear(ClearType::All),
         cursor::MoveTo(0, 0),
-        Print(r#"ctrl + c to exit, "#)
+        Print(
+            r#"
+        WASD to steer the snake
+        space to get the the current state of the game
+        ctrl + c to exit 
+        Make sure CapsLock is off
+        "#
+        )
     )
     .unwrap();
 }
@@ -40,7 +48,22 @@ pub async fn input_loop(stdout: &mut Stdout) {
             }) => {
                 execute!(stdout, Clear(ClearType::All), Print("up")).unwrap();
                 handles.push(tokio::spawn(async move {
-                    send_request("up").await;
+                    post_request("up").await;
+                }))
+            }
+            Event::Key(KeyEvent {
+                code: KeyCode::Char(' '),
+                kind: KeyEventKind::Press,
+                ..
+            }) => {
+                execute!(
+                    stdout,
+                    Clear(ClearType::All),
+                    // Print("You will see the state in a moment")
+                )
+                .unwrap();
+                handles.push(tokio::spawn(async move {
+                    get_state().await;
                 }))
             }
             Event::Key(KeyEvent {
@@ -50,7 +73,7 @@ pub async fn input_loop(stdout: &mut Stdout) {
             }) => {
                 execute!(stdout, Clear(ClearType::All), Print("left")).unwrap();
                 handles.push(tokio::spawn(async move {
-                    send_request("left").await;
+                    post_request("left").await;
                 }))
             }
             Event::Key(KeyEvent {
@@ -60,7 +83,7 @@ pub async fn input_loop(stdout: &mut Stdout) {
             }) => {
                 execute!(stdout, Clear(ClearType::All), Print("down")).unwrap();
                 handles.push(tokio::spawn(async move {
-                    send_request("down").await;
+                    post_request("down").await;
                 }))
             }
             Event::Key(KeyEvent {
@@ -70,7 +93,7 @@ pub async fn input_loop(stdout: &mut Stdout) {
             }) => {
                 execute!(stdout, Clear(ClearType::All), Print("right")).unwrap();
                 handles.push(tokio::spawn(async move {
-                    send_request("right").await;
+                    post_request("right").await;
                 }))
             }
             _ => (),
@@ -81,11 +104,24 @@ pub async fn input_loop(stdout: &mut Stdout) {
 pub fn wrapup() {
     disable_raw_mode().unwrap();
 }
-pub async fn send_request(direction: &str) {
+pub async fn post_request(direction: &str) {
     let client = reqwest::Client::new(); //TODO - Arc/Mutex solution for client in main
     let _res = client
         .post(format!("http://127.0.0.1:7878/snake/{}", direction))
         // .body("the exact body that is sent")
         .send()
         .await;
+}
+
+pub async fn get_state() {
+    let client = reqwest::Client::new();
+    let res = client
+        .get("http://127.0.0.1:7878/snake")
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+    println!("{}", res);
 }
